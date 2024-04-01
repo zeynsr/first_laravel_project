@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,15 @@ Route::prefix('categories')->group(function (){
     Route::get('/{category}/edit', [CategoryController::class, 'edit'])->name('category.edit');
     Route::post('/{category}/update', [CategoryController::class, 'update'])->name('category.update');
     Route::get('/{category}/destroy', [CategoryController::class, 'destroy'])->name('category.destroy');
+});
+
+Route::prefix('posts')->group(function (){
+    Route::get('/', [PostController::class, 'index'])->name('post.index');
+    Route::get('/create', [PostController::class, 'create'])->name('post.create');
+    Route::post('/store', [PostController::class, 'store'])->name('post.store');
+    Route::get('/{post}/edit', [PostController::class, 'edit'])->name('post.edit');
+    Route::post('/{post}/update', [PostController::class, 'update'])->name('post.update');
+    Route::get('/{post}/destroy', [PostController::class, 'destroy'])->name('post.destroy');
 });
 
 require __DIR__.'/auth.php';
