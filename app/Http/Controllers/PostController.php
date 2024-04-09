@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StorePostRequest;
 use App\Models\Category;
+use App\Models\File;
 use App\Models\Post;
+use App\Models\Tag;
+use Illuminate\Cache\TaggableStore;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 
@@ -24,8 +27,9 @@ class PostController extends Controller
      */
     public function create()
     {
+        $tags = Tag::all();
         $categories = Category::all();
-        return view('posts.posts-create', compact('categories'));
+        return view('posts.posts-create', compact('tags', 'categories'));
     }
 
     /**
@@ -33,14 +37,31 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
+//        $file = $request->file('image');
+//        $fileName = time() . '_' . $file->getClientOriginalName();
+//        $file->storeAs('public/images', $fileName);
+//
+//        $fileModel = new File();
+//        $fileModel->name = $fileName;
+//        $fileModel->path = 'storage/images/' . $fileName; // Path to file in storage directory
+//        $fileModel->size = $file->getSize();
+//        $fileModel->mime_type = $file->getMimeType();
+//        $fileModel->description = 'User uploaded image';
+//        $fileModel->save();
+
         $post = new Post();
         $post->title = $request->title;
         $post->content = $request->input('content');
         $post->short_content = $request->short_content;
         $post->category_id = $request->category_id;
+//        $post->image = $request->file('image');
         $post->user_id = 1;
 
         $post->save();
+
+        if($request->has('tags')){
+            $post->tags()->attach($request->tags);
+        }
 
         return redirect::route('post.index');
     }
@@ -58,8 +79,14 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        $categories = Category::all();
-        return view('posts.posts-edit', compact('post', 'categories'));
+        $data = [
+            'post' => $post,
+            'categories' => Category::all(),
+            'tags' => Tag::all(),
+            'tags_ids' => $post->getTagsIds()
+        ];
+
+        return view('posts.posts-edit', $data);
     }
 
     /**
@@ -71,6 +98,12 @@ class PostController extends Controller
         $post->content = $request->input('content');
         $post->short_content = $request->short_content;
         $post->category_id = $request->category_id;
+
+        if($request->has('tags')){
+            $post->tags()->sync($request->tags);
+        }else{
+            $post->tags()->detach();
+        }
 
         $post->save();
 

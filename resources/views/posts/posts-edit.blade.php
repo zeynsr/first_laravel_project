@@ -28,7 +28,7 @@
             <label for="post-short_content" class="form-label">محتوای کوتاه پست:</label>
             <input id="post-short_content" name="short_content" value="{{ old('short_content', $post->short_content) }}" type="text" class="form-control">
         </div>
-        <div>
+        <div class="mb-3">
             <label for="category_id"  class="form-label">نام دسته بندی:</label>
             <select name="category_id" class="form-select">
                 <option value="">انتخاب کنید:</option>
@@ -36,6 +36,15 @@
                     <option value="{{ $category->id }}" @selected($category->id == $post->category_id)>{{ $category->title }}</option>
                 @endforeach
             </select>
+        </div>
+        <div class="form-group">
+            <label for="name-tag"  class="form-label">تگ ها:</label>
+            @foreach($tags as $tag)
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" name="tags[]" type="checkbox" id="tags{{ $tag->id }}" value="{{ $tag->id }}" @checked(in_array($tag->id, $tags_ids ))>
+                    <label class="form-check-label" for="tags{{ $tag->id }}">{{ $tag->title }}</label>
+                </div>
+            @endforeach
         </div>
         <br>
         <button type="submit"  class="btn btn-primary">ثبت</button>

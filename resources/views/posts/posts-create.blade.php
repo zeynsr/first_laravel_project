@@ -12,7 +12,7 @@
            </ul>
        </div>
     @endif
-    <form action="{{ route('post.store') }}" method="post">
+    <form action="{{ route('post.store') }}" method="post" enctype="multipart/form-data">
         @csrf
         <div class="mb-3">
             <label for="post-title" class="form-label">عنوان پست:</label>
@@ -28,7 +28,7 @@
             <label for="post-short_content" class="form-label">محتوای کوتاه پست:</label>
             <input id="post-short_content" name="short_content" value="{{ old('short_content') }}" type="text" class="form-control">
         </div>
-        <div>
+        <div class="mb-3">
             <label for="category_id"  class="form-label">نام دسته بندی:</label>
             <select name="category_id" class="form-select">
                 <option value="">انتخاب کنید:</option>
@@ -37,7 +37,18 @@
                 @endforeach
             </select>
         </div>
-        <br>
+{{--        <div class="mb-3">--}}
+{{--            <input type="file" name="image" accept="image/*">--}}
+{{--        </div>--}}
+        <div class="form-group">
+            <label for="name-tag"  class="form-label">تگ ها:</label>
+            @foreach($tags as $tag)
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" name="tags[]" type="checkbox" id="tags{{ $tag->id }}" value="{{ $tag->id }}">
+                    <label class="form-check-label" for="tags{{ $tag->id }}">{{ $tag->title }}</label>
+                </div>
+            @endforeach
+        </div>
         <button type="submit"  class="btn btn-primary">ثبت</button>
     </form>
 @endsection
