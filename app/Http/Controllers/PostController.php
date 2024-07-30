@@ -7,8 +7,8 @@ use App\Models\Category;
 use App\Models\File;
 use App\Models\Post;
 use App\Models\Tag;
-use Illuminate\Cache\TaggableStore;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 
 class PostController extends Controller
@@ -18,13 +18,25 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        $posts = Post::query()->where('user_id', Auth::id())->get();
         return view('posts.posts-index', compact('posts'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
+    public function UploadPhoto(Request $request)
+    {
+        $photoName = time() . '_' . $request->image->getClientOriginalName();
+        $photo = $request->file('image');
+        $file = new File();
+        $file->name = $photoName;
+        $file->path = public_path('photos') . $photoName;
+        $file->type = $photo->getClientOriginalExtension();;
+        $file->size = $photo->getSize();
+        $photo->move(public_path('photos'), $photoName);
+        return $file;
+    }
     public function create()
     {
         $tags = Tag::all();
@@ -37,32 +49,26 @@ class PostController extends Controller
      */
     public function store(StorePostRequest $request)
     {
-//        $file = $request->file('image');
-//        $fileName = time() . '_' . $file->getClientOriginalName();
-//        $file->storeAs('public/images', $fileName);
-//
-//        $fileModel = new File();
-//        $fileModel->name = $fileName;
-//        $fileModel->path = 'storage/images/' . $fileName; // Path to file in storage directory
-//        $fileModel->size = $file->getSize();
-//        $fileModel->mime_type = $file->getMimeType();
-//        $fileModel->description = 'User uploaded image';
-//        $fileModel->save();
-
         $post = new Post();
         $post->title = $request->title;
         $post->content = $request->input('content');
         $post->short_content = $request->short_content;
         $post->category_id = $request->category_id;
-//        $post->image = $request->file('image');
-        $post->user_id = 1;
+        $post->user_id = Auth::id();
 
         $post->save();
 
-        if($request->has('tags')){
+        if ($request->has('tags')) {
             $post->tags()->attach($request->tags);
         }
 
+        if ($request->has('image')) {
+
+//          $path = $request->file('image')->store('public');
+//          Storage::put(public_path('images'), $photo, 'public');
+            $image = $this->UploadPhoto($request);
+            $post->files()->save($image);
+        }
         return redirect::route('post.index');
     }
 
@@ -85,7 +91,6 @@ class PostController extends Controller
             'tags' => Tag::all(),
             'tags_ids' => $post->getTagsIds()
         ];
-
         return view('posts.posts-edit', $data);
     }
 
@@ -94,16 +99,29 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+        $user = Auth::user();
         $post->title = $request->title;
         $post->content = $request->input('content');
         $post->short_content = $request->short_content;
         $post->category_id = $request->category_id;
 
-        if($request->has('tags')){
+        if ($user->hasRole('admin')) {
+            $post->is_confirm = $request->is_confirm;
+        }
+        if ($request->has('tags')) {
             $post->tags()->sync($request->tags);
-        }else{
+        } else {
             $post->tags()->detach();
         }
+        if ($request->has('image')){
+            if($post->files() != NULL)
+            {
+                $post->files()->delete();
+            }
+            $image = $this->UploadPhoto($request);
+            $post->files()->save($image);
+        }
+
 
         $post->save();
 
@@ -115,7 +133,28 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        $post->tags()->detach();
+        $post->files()->delete();
         $post->delete();
         return redirect::route('post.index');
+    }
+
+    public function display(Post $post)
+    {
+        $latestPost = Post::query()->where('is_confirm', 1)->latest()->take(3);
+        return view('layout.home_display', compact('latestPost'));
+    }
+
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+        $post = Post::query()
+            ->where('is_confirm', 1)
+            ->where(function ($query) use ($search) {
+                $query->where('title', 'LIKE', "%{$search}%")
+                    ->orwhere('content', 'LIKE', "%{$search}%");
+            })
+            ->get();
+        return view('layout.home_serach', compact('post'));
     }
 }
