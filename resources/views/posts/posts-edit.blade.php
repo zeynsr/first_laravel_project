@@ -12,7 +12,7 @@
             </ul>
         </div>
     @endif
-    <form action="{{ route('post.update', ['post' => $post->id]) }}" method="post">
+    <form action="{{ route('post.update', ['post' => $post->id]) }}" method="post" enctype="multipart/form-data">
         @csrf
         <div class="mb-3">
             <label for="post-title" class="form-label">عنوان پست:</label>
@@ -45,6 +45,9 @@
                     <label class="form-check-label" for="tags{{ $tag->id }}">{{ $tag->title }}</label>
                 </div>
             @endforeach
+        </div>
+        <div class="mb-3">
+            <input type="file" name="image" accept="image/*" >
         </div>
         <br>
         <button type="submit"  class="btn btn-primary">ثبت</button>

@@ -37,9 +37,9 @@
                 @endforeach
             </select>
         </div>
-{{--        <div class="mb-3">--}}
-{{--            <input type="file" name="image" accept="image/*">--}}
-{{--        </div>--}}
+        <div class="mb-3">
+            <input type="file" name="image" accept="image/*">
+        </div>
         <div class="form-group">
             <label for="name-tag"  class="form-label">تگ ها:</label>
             @foreach($tags as $tag)

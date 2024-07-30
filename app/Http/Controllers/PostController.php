@@ -32,7 +32,7 @@ class PostController extends Controller
         $file = new File();
         $file->name = $photoName;
         $file->path = public_path('photos') . $photoName;
-        $file->type = $photo->getClientOriginalExtension();;
+        $file->type = $photo->getClientOriginalExtension();
         $file->size = $photo->getSize();
         $photo->move(public_path('photos'), $photoName);
         return $file;
