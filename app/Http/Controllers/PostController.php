@@ -9,9 +9,7 @@ use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
-use App\Models\Role;
 use RealRashid\SweetAlert\Facades\Alert;
 
 
@@ -23,11 +21,7 @@ class PostController extends Controller
      */
     public function index()
     {
-
-//        $admin = DB::table('role_user')->where('role_id',1);
-           $admin = Role::query()->where('name', 'admin')->first();
-//        dd($admin);
-        if(Auth::id() == $admin['user_id'])
+        if(Auth::user()->hasRole('admin'))
         {
             $posts = Post::all();
         }else{
