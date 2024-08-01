@@ -9,7 +9,12 @@ use App\Models\Post;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
+use App\Models\Role;
+use RealRashid\SweetAlert\Facades\Alert;
+
+
 
 class PostController extends Controller
 {
@@ -18,7 +23,17 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::query()->where('user_id', Auth::id())->get();
+
+//        $admin = DB::table('role_user')->where('role_id',1);
+           $admin = Role::query()->where('name', 'admin')->first();
+//        dd($admin);
+        if(Auth::id() == $admin['user_id'])
+        {
+            $posts = Post::all();
+        }else{
+            $posts = Post::query()->where('user_id', Auth::id())->get();
+        }
+
         return view('posts.posts-index', compact('posts'));
     }
 
@@ -72,6 +87,20 @@ class PostController extends Controller
         return redirect::route('post.index');
     }
 
+    public function confirm(Post $post)
+    {
+        if ($post->is_confirm == 1) {
+            $post->is_confirm = 0;
+        } else {
+            $post->is_confirm = 1;
+        }
+        $post->save();
+//        Alert::success('Success Title', 'Success Message');
+//        alert()->success('Title','Lorem Lorem Lorem');
+
+        return redirect::back()->with('msg', 'updated!');
+    }
+
     /**
      * Display the specified resource.
      */
@@ -105,9 +134,9 @@ class PostController extends Controller
         $post->short_content = $request->short_content;
         $post->category_id = $request->category_id;
 
-        if ($user->hasRole('admin')) {
-            $post->is_confirm = $request->is_confirm;
-        }
+//        if ($user->hasRole('admin')) {
+//            $post->is_confirm = $request->is_confirm;
+//        }
         if ($request->has('tags')) {
             $post->tags()->sync($request->tags);
         } else {

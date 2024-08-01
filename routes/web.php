@@ -3,6 +3,8 @@
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -19,7 +21,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::prefix('categories')->group(function (){
+Route::middleware('auth')->group(function (){
+    Route::get('/users', [UserController::class, 'index'])->name('user.index');
+
+});
+
+Route::middleware('auth')->prefix('categories')->group(function (){
     Route::get('/', [CategoryController::class, 'index'])->name('category.index');
     Route::get('/create', [CategoryController::class, 'create'])->name('category.create');
     Route::post('/store', [CategoryController::class, 'store'])->name('category.store');
@@ -28,12 +35,13 @@ Route::prefix('categories')->group(function (){
     Route::get('/{category}/destroy', [CategoryController::class, 'destroy'])->name('category.destroy');
 });
 
-Route::prefix('posts')->group(function (){
-    Route::get('/', [PostController::class, 'index'])->name('post.index');
+Route::middleware('auth')->prefix('posts')->group(function (){
+    Route::get('/', [PostController::class, 'index'])->name('post.index')->withoutMiddleware('auth');;
     Route::get('/create', [PostController::class, 'create'])->name('post.create');
     Route::post('/store', [PostController::class, 'store'])->name('post.store');
     Route::get('/{post}/edit', [PostController::class, 'edit'])->name('post.edit');
     Route::post('/{post}/update', [PostController::class, 'update'])->name('post.update');
+    Route::get('/{post}/confirm', [PostController::class, 'confirm'])->name('post.confirm');
     Route::get('/{post}/destroy', [PostController::class, 'destroy'])->name('post.destroy');
 });
 
